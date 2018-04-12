@@ -36,25 +36,9 @@ end
 
 function start_game()
   scores={0,0};
-  foreach(boards,create_board);
 
   game.upd=upd_game;
   game.drw=drw_game;
-end
-
-function create_board(board)
-  reset_board(board);
-  for i=#board,0,-1 do
-      board[i]={x=i,y=j,v=rnd(8)+32};
-  end
-end
-
-function reset_board(board) 
-  for i=b_const.w,0,-8 do
-    for j=b_const.h,0,-8 do
-      add(board,{x=i,y=j,v=5});
-    end
-  end
 end
 
 function upd_game()
@@ -80,17 +64,15 @@ function drw_game()
   cls();
   map(0,0,0,0,16,16); 
 
-  foreach(boards,drawboard);
+  for i=35,0,-1 do
+    spr(rnd(8)+32,i%7*8,i%5*8);
+  end
+
   for i=n_pl,1,-1 do
     spr((i*2)-1,pl_x[i],b_const.h);
   end
 end
 
-function drawboard(board)
-  for i=#board,0,-1 do
-    spr(board[i].v,board[i].x-b_const.w,board[i].y-b_const.h);
-  end
-end
 
 __gfx__
 0000000003300880033008800cc008800cc008800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
