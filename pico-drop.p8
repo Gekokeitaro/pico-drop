@@ -9,8 +9,6 @@ game={}; -- game state
 camera(0,0);
 -- board vars
 boards={};
-boards.b1={};
-boards.b2={};
 b_const={w=48,h=80};
 board_x={0,72};
 init_rows=5;
@@ -36,9 +34,22 @@ end
 
 function start_game()
   scores={0,0};
+  
+  for i=n_pl,1,-1 do
+    create_board(i);
+  end 
 
   game.upd=upd_game;
   game.drw=drw_game;
+end
+
+function create_board(_i)
+  local b={};
+  for i=36,1,-1 do
+    local drop={v=rnd(8)+32,x=(i%7*8)+board_x[_i],y=i%5*8};
+    add(b,drop);
+  end
+  add(boards,b);
 end
 
 function upd_game()
@@ -64,12 +75,16 @@ function drw_game()
   cls();
   map(0,0,0,0,16,16); 
 
-  for i=35,0,-1 do
-    spr(rnd(8)+32,i%7*8,i%5*8);
-  end
-
+  foreach(boards,render);
   for i=n_pl,1,-1 do
     spr((i*2)-1,pl_x[i],b_const.h);
+  end
+end
+
+function render(_b)
+  b=_b;
+  for i=#b,1,-1 do
+    spr(b[i].v, b[i].x, b[i].y);
   end
 end
 
