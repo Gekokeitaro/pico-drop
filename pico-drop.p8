@@ -12,6 +12,7 @@ boards={};
 b_const={w=48,h=80};
 board_x={0,72};
 init_rows=5;
+blank_spr=5;
 -- player vars
 n_pl=2; -- num_players
 scores={};
@@ -36,20 +37,32 @@ function start_game()
   scores={0,0};
   
   for i=n_pl,1,-1 do
-    create_board(i);
+    empty_brd(i);
   end 
 
   game.upd=upd_game;
   game.drw=drw_game;
 end
 
-function create_board(_i)
+function empty_brd(_i)
   local b={};
-  for i=36,1,-1 do
-    local drop={v=rnd(8)+32,x=(i%7*8)+board_x[_i],y=i%5*8};
+  for i=77,1,-1 do
+    local drop={v=blank_spr,x=(i%7*8)+board_x[_i],y=i%11*8};
     add(b,drop);
   end
   add(boards,b);
+end
+
+function getBoard(_i)
+  return boards[i];
+end
+
+function getDrop(board, x, y)
+  return board[(x*y)];
+end
+
+function changeDrop(drop, n_v)
+  drop.v=n_v;
 end
 
 function upd_game()
