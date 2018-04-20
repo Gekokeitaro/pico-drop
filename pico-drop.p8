@@ -10,7 +10,7 @@ camera(0,0);
 -- board vars
 boards={};
 b_const={w=48,h=80};
-board_x={0,72};
+brd_x={0,72};
 init_rows=5;
 blank_spr=5;
 -- player vars
@@ -37,20 +37,21 @@ function start_game()
   scores={0,0};
   
   for i=n_pl,1,-1 do
-    empty_brd(i);
+    add(boards,empty_brd(4,false));
   end 
 
   game.upd=upd_game;
   game.drw=drw_game;
 end
 
-function empty_brd(_i)
+function empty_brd(h,blank)
   local b={};
-  for i=77,1,-1 do
-    local drop={v=blank_spr,x=(i%7*8)+board_x[_i],y=i%11*8};
+  for i=7*h,1,-1 do
+    local _v=blank and 8 or rnd(10)<9 and rnd(4)+32 or rnd(5)+36;
+    local drop={v=_v,x=(i%7*8),y=i%h*8};
     add(b,drop);
   end
-  add(boards,b);
+  return b;
 end
 
 function getBoard(_i)
@@ -71,7 +72,7 @@ end
 
 function upd_player(pl)
   if btnp(0,pl-1) 
-  and pl_x[pl] > board_x[pl] then
+  and pl_x[pl] > brd_x[pl] then
     pl_x[pl]-=8;
   end
   if btnp(1,pl-1)
@@ -81,23 +82,24 @@ function upd_player(pl)
 end
 
 function getlimit(pl)
-  return b_const.w+board_x[pl];
+  return b_const.w+brd_x[pl];
 end
 
 function drw_game() 
   cls();
   map(0,0,0,0,16,16); 
 
-  foreach(boards,render);
+  
   for i=n_pl,1,-1 do
+    rndr_brd(i);
     spr((i*2)-1,pl_x[i],b_const.h);
   end
 end
 
-function render(_b)
-  b=_b;
-  for i=#b,1,-1 do
-    spr(b[i].v, b[i].x, b[i].y);
+function rndr_brd(i)
+  b=boards[i];
+  for j=#b,1,-1 do
+    spr(b[j].v, b[j].x+brd_x[i], b[j].y);
   end
 end
 
