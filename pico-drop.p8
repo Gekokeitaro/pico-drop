@@ -104,6 +104,10 @@ function upd_pl(pl)
   and pl_x[pl] < pl_lim(pl) then
     pl_x[pl]+=8;
   end
+  --if btnp(4,pl-1) then -- todo pull
+  --end
+  --if btnp(5,pl-1) then -- todo release
+  --end
 end
 
 function drw_pl(pl)
@@ -181,11 +185,6 @@ function add_rs(b,n)
   end  
 end
 
-function updentity()
-end
-
-
-
 function empty_r(r)
   local ds=r; -- r{{}}
   for d in all(ds) do
@@ -201,12 +200,6 @@ end
 --Drop
 function gen_drp(blnk)
   return blnk and 5 or rnd_d();
-end
-
-function updentity()
-end
-
-function drwentity()
 end
 
 function rnd_d()
