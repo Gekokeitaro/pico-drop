@@ -1,18 +1,18 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
---pico drop
--- by gekko
+--pico-drop
+--by _gekko_
 
+--Game
 --main
 game={}; -- game state
 camera(0,0);
 -- board vars
-boards={};
-b_const={w=48,h=80};
+brds={};
+b_col={7,48};
+b_row={11,80};
 brd_x={0,72};
-init_rows=5;
-blank_spr=5;
 -- player vars
 n_pl=2; -- num_players
 scores={};
@@ -25,84 +25,193 @@ function _init()
   start_game();
 end
 
-function _update()
-  game.upd();
-end
-
-function _draw()
-  game.drw();  
-end
-
 function start_game()
-  scores={0,0};
+  score={0,0};
   
-  for i=n_pl,1,-1 do
-    add(boards,empty_brd(4,false));
-  end 
-
+  local b=init_brd();
+  add_rs(b,4);
+  
+  add(brds,b);
+  add(brds,cpy_brd(b));
+  
   game.upd=upd_game;
   game.drw=drw_game;
 end
 
-function empty_brd(h,blank)
-  local b={};
-  for i=7*h,1,-1 do
-    local _v=blank and 8 or rnd(10)<9 and rnd(4)+32 or rnd(5)+36;
-    local drop={v=_v,x=(i%7*8),y=i%h*8};
-    add(b,drop);
-  end
-  return b;
-end
-
-function getBoard(_i)
-  return boards[i];
-end
-
-function getDrop(board, x, y)
-  return board[(x*y)];
-end
-
-function changeDrop(drop, n_v)
-  drop.v=n_v;
+function _update()
+  game.upd();
 end
 
 function upd_game()
-  for i=n_pl,1,-1 do upd_player(i) end
+  for i=n_pl,1,-1 do
+    upd_brd(i);
+    upd_pl(i);
+  end
 end
 
-function upd_player(pl)
+
+
+function _draw()
+  game.drw();
+end
+
+function drw_game()
+  --printh("----- drw_game() -----");
+  cls();
+  map(0,0,0,0,16,16); 
+  
+  for i=n_pl,1,-1 do
+    drw_brd(i);
+    drw_pl(i);
+  end
+end
+
+-- converts anything to string, even nested tables
+function tostring(any)
+    if type(any)=="function" then 
+        return "function" 
+    end
+    if any==nil then 
+        return "nil" 
+    end
+    if type(any)=="string" then
+        return any
+    end
+    if type(any)=="boolean" then
+        if any then return "true" end
+        return "false"
+    end
+    if type(any)=="table" then
+        local str = "{ "
+        for k,v in pairs(any) do
+            str=str..tostring(k).."->"..tostring(v).." "
+        end
+        return str.."}\n"
+    end
+    if type(any)=="number" then
+        return ""..any
+    end
+    return "unkown" -- should never show
+end
+
+--Player
+function upd_pl(pl)
   if btnp(0,pl-1) 
   and pl_x[pl] > brd_x[pl] then
     pl_x[pl]-=8;
   end
   if btnp(1,pl-1)
-  and pl_x[pl] < getlimit(pl) then
+  and pl_x[pl] < pl_lim(pl) then
     pl_x[pl]+=8;
   end
 end
 
-function getlimit(pl)
-  return b_const.w+brd_x[pl];
+function drw_pl(pl)
+  spr((pl*2)-1,pl_x[pl],b_row[2]);
 end
 
-function drw_game() 
-  cls();
-  map(0,0,0,0,16,16); 
+function pl_lim(pl)
+  return b_col[2]+brd_x[pl];
+end
 
-  
-  for i=n_pl,1,-1 do
-    rndr_brd(i);
-    spr((i*2)-1,pl_x[i],b_const.h);
+--Board
+function init_brd()
+  --printh("----- init_brd() -----");
+  local b={};
+  for i=b_row[1],1,-1 do
+    local r=gen_r(true);
+    add(b,r);
+  end
+  return b;
+end
+
+function upd_brd(brd)
+  if(0>=t()%5) then
+    add_rs(brds[brd],1);
   end
 end
 
-function rndr_brd(i)
-  b=boards[i];
-  for j=#b,1,-1 do
-    spr(b[j].v, b[j].x+brd_x[i], b[j].y);
+function drw_brd(pl)
+  --printh("----- drw_brd(pl)-----");
+  b=brds[pl];
+  for i=7*b_row[1],1,-1 do
+    local y=i%b_row[1];
+    --printh("----- init_brd() ["..(i%7+1)..","..(y%b_row[1]+1).."]");
+    spr(b[y+1][i%7+1],(i%7*8)+brd_x[pl],y*8);
   end
 end
 
+function shift_rs(brd)
+  --printh("----- shift_rs(brd) -----");
+  for i=b_row[1],1,-1 do
+    if(empty_r(brd[i]) != true) then
+      brd[i+1]=brd[i];
+      brd[i]=gen_r(true);
+    end
+  end
+end
+
+function cpy_brd(o_brd)
+    local b_cpy = {}
+    for o_k, o_val in pairs(o_brd) do
+      b_cpy[o_k] = o_val
+    end    
+    return b_cpy
+end
+
+--Row
+function gen_r(blnk)
+  local r={};
+  for i=b_col[1],1,-1 do
+    local d=gen_drp(blnk);
+    add(r,d);
+  end
+  return r;
+end
+
+function add_rs(b,n)
+  --printh("----- add_rs(b,n) -----");
+  for i=n,1,-1 do
+    local nr=gen_r(false);
+    if empty_r(b[1]) then b[1]=nr;
+    else
+      shift_rs(b);
+      b[1]=nr;
+    end;
+  end  
+end
+
+function updentity()
+end
+
+
+
+function empty_r(r)
+  local ds=r; -- r{{}}
+  for d in all(ds) do
+    if(d!=5) then return false; end
+  end
+  return true;
+end
+
+function get_r(brd,i)
+  return brd[i];
+end
+
+--Drop
+function gen_drp(blnk)
+  return blnk and 5 or rnd_d();
+end
+
+function updentity()
+end
+
+function drwentity()
+end
+
+function rnd_d()
+  return flr(rnd(10)<9.5 and rnd(4)+32 or rnd(5)+36);
+end
 
 __gfx__
 0000000003300880033008800cc008800cc008800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

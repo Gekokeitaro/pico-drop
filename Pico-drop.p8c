@@ -1,0 +1,218 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project version="1">
+  <game>
+    <name>Pico-drop</name>
+    <author>_Gekko_</author>
+    <cart>C:\Users\1\Desktop\pico-drop-master\pico-drop.p8</cart>
+  </game>
+  <entities>
+    <entity name="Notes" enabled="0">
+      <function name="ideas" enabled="0">ideas
+
+  1. 
+  2. </function>
+      <function name="todo" enabled="0">todo
+
+  1. 
+  2. </function>
+    </entity>
+    <entity name="Game" enabled="1">
+      <function name="globals" enabled="1">--main
+game={}; -- game state
+camera(0,0);
+-- board vars
+brds={};
+b_col={7,48};
+b_row={11,80};
+brd_x={0,72};
+-- player vars
+n_pl=2; -- num_players
+scores={};
+pl_x={24,96};
+-- text vars
+txt_y=96;
+txt_debug={0,104};</function>
+      <function name="_init" enabled="1">function _init()
+  start_game();
+end
+
+function start_game()
+  score={0,0};
+  
+  local b=init_brd();
+  add_rs(b,4);
+  
+  add(brds,b);
+  add(brds,cpy_brd(b));
+  
+  game.upd=upd_game;
+  game.drw=drw_game;
+end</function>
+      <function name="_update" enabled="1">function _update()
+  game.upd();
+end
+
+function upd_game()
+  for i=n_pl,1,-1 do
+    upd_brd(i);
+    upd_pl(i);
+  end
+end
+
+</function>
+      <function name="_draw" enabled="1">function _draw()
+  game.drw();
+end
+
+function drw_game()
+  --printh("----- drw_game() -----");
+  cls();
+  map(0,0,0,0,16,16); 
+  
+  for i=n_pl,1,-1 do
+    drw_brd(i);
+    drw_pl(i);
+  end
+end</function>
+      <function name="utils" enabled="1">-- converts anything to string, even nested tables
+function tostring(any)
+    if type(any)=="function" then 
+        return "function" 
+    end
+    if any==nil then 
+        return "nil" 
+    end
+    if type(any)=="string" then
+        return any
+    end
+    if type(any)=="boolean" then
+        if any then return "true" end
+        return "false"
+    end
+    if type(any)=="table" then
+        local str = "{ "
+        for k,v in pairs(any) do
+            str=str..tostring(k).."-&gt;"..tostring(v).." "
+        end
+        return str.."}\n"
+    end
+    if type(any)=="number" then
+        return ""..any
+    end
+    return "unkown" -- should never show
+end</function>
+    </entity>
+    <entity name="Player" enabled="1">
+      <function name="update" enabled="1">function upd_pl(pl)
+  if btnp(0,pl-1) 
+  and pl_x[pl] &gt; brd_x[pl] then
+    pl_x[pl]-=8;
+  end
+  if btnp(1,pl-1)
+  and pl_x[pl] &lt; pl_lim(pl) then
+    pl_x[pl]+=8;
+  end
+  --if btnp(4,pl-1) then -- TODO pull
+  --end
+  --if btnp(5,pl-1) then -- TODO release
+  --end
+end</function>
+      <function name="draw" enabled="1">function drw_pl(pl)
+  spr((pl*2)-1,pl_x[pl],b_row[2]);
+end</function>
+      <function name="Utils" enabled="1">function pl_lim(pl)
+  return b_col[2]+brd_x[pl];
+end</function>
+    </entity>
+    <entity name="Board" enabled="1">
+      <function name="init" enabled="1">function init_brd()
+  --printh("----- init_brd() -----");
+  local b={};
+  for i=b_row[1],1,-1 do
+    local r=gen_r(true);
+    add(b,r);
+  end
+  return b;
+end</function>
+      <function name="update" enabled="1">function upd_brd(brd)
+  if(0&gt;=t()%5) then
+    add_rs(brds[brd],1);
+  end
+end</function>
+      <function name="draw" enabled="1">function drw_brd(pl)
+  --printh("----- drw_brd(pl)-----");
+  b=brds[pl];
+  for i=7*b_row[1],1,-1 do
+    local y=i%b_row[1];
+    --printh("----- init_brd() ["..(i%7+1)..","..(y%b_row[1]+1).."]");
+    spr(b[y+1][i%7+1],(i%7*8)+brd_x[pl],y*8);
+  end
+end</function>
+      <function name="Utils " enabled="1">function shift_rs(brd)
+  --printh("----- shift_rs(brd) -----");
+  for i=b_row[1],1,-1 do
+    if(empty_r(brd[i]) != true) then
+      brd[i+1]=brd[i];
+      brd[i]=gen_r(true);
+    end
+  end
+end
+
+function cpy_brd(o_brd)
+    local b_cpy = {}
+    for o_k, o_val in pairs(o_brd) do
+      b_cpy[o_k] = o_val
+    end    
+    return b_cpy
+end</function>
+    </entity>
+    <entity name="Row" enabled="1">
+      <function name="init" enabled="1">function gen_r(blnk)
+  local r={};
+  for i=b_col[1],1,-1 do
+    local d=gen_drp(blnk);
+    add(r,d);
+  end
+  return r;
+end
+
+function add_rs(b,n)
+  --printh("----- add_rs(b,n) -----");
+  for i=n,1,-1 do
+    local nr=gen_r(false);
+    if empty_r(b[1]) then b[1]=nr;
+    else
+      shift_rs(b);
+      b[1]=nr;
+    end;
+  end  
+end</function>
+      <function name="update" enabled="1">function updEntity()
+end</function>
+      <function name="draw" enabled="1"></function>
+      <function name="Utils" enabled="1">function empty_r(r)
+  local ds=r; -- r{{}}
+  for d in all(ds) do
+    if(d!=5) then return false; end
+  end
+  return true;
+end
+
+function get_r(brd,i)
+  return brd[i];
+end</function>
+    </entity>
+    <entity name="Drop" enabled="1">
+      <function name="init" enabled="1">function gen_drp(blnk)
+  return blnk and 5 or rnd_d();
+end</function>
+      <function name="update" enabled="1">function updEntity()
+end</function>
+      <function name="draw" enabled="1">function drwEntity()
+end</function>
+      <function name="Utils" enabled="1">function rnd_d()
+  return flr(rnd(10)&lt;9.5 and rnd(4)+32 or rnd(5)+36);
+end</function>
+    </entity>
+  </entities>
+</project>
